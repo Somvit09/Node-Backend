@@ -35,14 +35,23 @@ const database = process.env.DATABASE_NAME;
 
 // router configuration
 const apparelRoutes = require("./routes/crud")
-const loginRouter = require("./routes/loginRoute")
-const registerRouter = require('./routes/registerRoute')
-const forgotPasswordRouter = require("./routes/forgotPasswordRoute")
+const merchantRouter = require('./routes/merchantRoutes')
+const customerRouter = require('./routes/customerRoutes')
+const adminRouter = require('./routes/adminRoutes')
 
 
 // Middlewares
 app.use(express.json());
-app.use(cors());
+// Configure CORS
+const corsOptions = {
+    origin: 'http://localhost:3000', // Update with your frontend's URL
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true, // Enable CORS credentials (cookies, authorization headers, etc.)
+  };
+  
+app.use(cors(corsOptions));
+
+// for protected  or authenticated routes
 function authenticationToken(req, res, next) {
     const token = req.header("Authorization")
     if (!token) {
@@ -73,25 +82,20 @@ db.once('open', () => {   //sets up an event listener for the 'open' event of th
     console.log('Connected to MongoDB');
 });
 
-// getting the models
-
-const Apparel = require('./models/apparel_model');
-const Customer = require('./models/customer_model');
-const Merchant = require('./models/merchant_model');
-const OTP = require('./models/otpModel');
-const { register } = require('./pages/register');
-
 
 
 // routers for crud in apparel
-
 app.use('/apparel', apparelRoutes)
 
-app.use('/login', loginRouter)
+// merchant routes
+app.use('/merchant', merchantRouter)
 
-app.use('/register', registerRouter)
+// customer routes 
+app.use('/customer', customerRouter)
 
-app.use('/forgot-password', forgotPasswordRouter)
+// admin routes
+app.use('/admin', adminRouter)
+
 
 
 // authentication required for this route using authenticationToken middleware

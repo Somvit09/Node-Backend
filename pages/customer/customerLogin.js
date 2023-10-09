@@ -1,0 +1,151 @@
+const Customer = require("../../models/customer_model");
+const OTP = require("../../models/otpModel");
+const jwt = require("jsonwebtoken");
+require('dotenv').config();
+
+
+// for otp
+const twilio = require('twilio');
+const twilioAccountSid = process.env.YOUR_TWILIO_ACCOUNT_SID;
+const twilioAuthToken = process.env.YOUR_TWILIO_AUTH_TOKEN;
+const twilioPhoneNumber = process.env.YOUR_TWILIO_PHONE_NUMBER;
+
+// initializing the Twilio client
+const client = twilio(twilioAccountSid, twilioAuthToken);
+
+
+// Helper function to generate a random OTP
+function generateRandomOTP() {
+    return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
+
+// Login function with OTP authentication
+const loginCustomer = async (req, res) => {
+    const { phoneNumber } = req.body;
+    const otp = generateRandomOTP();
+
+    try {
+        // Send OTP via Twilio
+        await client.messages.create({
+            body: `Your otp is ${otp}. It will be valid for 5 minutes.`,
+            from: twilioPhoneNumber,
+            to: phoneNumber,
+        });
+        // stored the otp to the model
+        // if already otp is in model
+        existingOtp = await OTP.findOne({ phoneNumber: phoneNumber })
+        if (!existingOtp){
+            // saving otp to the model
+            await OTP.create({ phoneNumber: phoneNumber, otp: otp });
+            return res.status(201).json({
+                message: `OTP sent Successfully. otp is ${otp}. It will be valid for 5 minutes.`,
+                redirectURL: `/verify-otp?phoneNumber=${phoneNumber}`,
+            });
+        }
+        return res.status(201).json({
+            message: `OTP sent Successfully. otp is ${existingOtp.otp}. It will be valid for 5 minutes.`,
+            redirectURL: `/verify-otp?phoneNumber=${phoneNumber}`,
+        });
+
+    } catch (error) {
+        console.log(`Failed to send OTP to the phone number ${phoneNumber}.`, error);
+        res.status(500).json({
+            error: `Failed to login user. Please try after some time. ${error.message}`,
+            redirectURL: "/login"
+        });
+    }
+}
+
+// Verify OTP
+const verifyOTP = async (req, res) => {
+    const { phoneNumber, user_otp } = req.body;
+
+    try {
+        // Find the user by email
+        const customer = await Customer.findOne({ customerPhoneNumber: phoneNumber });
+
+        // Check if the OTP matches the stored OTP
+        const storedOTP = await OTP.findOne({ phoneNumber: phoneNumber });
+
+        // if otp expired
+        if (!storedOTP) {
+            return res.status(404).json({
+                success: false,
+                message: "OTP has expired, please retry again with newly generated OTP.",
+                redirectURL: `/login?phoneNumber=${phoneNumber}`
+            })
+        }
+        if (storedOTP.otp) {
+            if (storedOTP.otp !== user_otp) {
+                return res.status(404).json({
+                    success: false,
+                    message: "Otp is incorrect.",
+                    redirectURL: `/verify-otp?phoneNumber=${phoneNumber}`
+                })
+            }
+        }
+
+        if (storedOTP && storedOTP.otp === user_otp) {
+            // if otp verified and customer is not found
+            if (!customer) {
+                return res.status(201).json({
+                    success: true,
+                    message: "OTP verified successfully. Customer is not found, redirecting to the add details.",
+                    redirectURL: `/add-details?phoneNumber=${phoneNumber}`,
+                })
+            }
+            // if customer found
+            // Create and sign a JWT token for the newly registered user
+            const token = jwt.sign({ customerId: customer._id }, process.env.JWT_SECRET, {
+                expiresIn: "1h", // expires in 1 hour
+            });
+            return res.status(200).json({
+                success: true,
+                message: "OTP verified successfully. Customer is found, redirecting to the virtual tryon.",
+                redirectURL: `/virtual-tryon?phoneNumber=${phoneNumber}`,
+                token: token
+            })
+        } else {
+            res.status(400).json({
+                error: "error occured",
+                redirectURL: `/login/?phoneNumber=${phoneNumber}`
+            });
+        }
+    } catch (err) {
+        res.status(500).json({
+            error: err.message,
+        });
+    }
+}
+
+const addDetails = async (req, res) => {
+    try {
+        const { phoneNumber, email, fullName } = req.body
+        await Customer.create({ customerPhoneNumber: phoneNumber, customerEmail: email, customerName: fullName })
+
+        const customer = await Customer.findOne({ customerPhoneNumber: phoneNumber })
+
+        // Create and sign a JWT token for the newly registered user
+        const token = jwt.sign({ customerId: customer._id }, process.env.JWT_SECRET, {
+            expiresIn: "1h", // expires in 1 hour
+        });
+        return res.status(201).json({
+            success: true,
+            message: "Updated new customer, redirecting to virtual tryon.",
+            redirectURL: `/virtual-tryon?phoneNumber=${phoneNumber}`,
+            token: token
+        })
+    } catch(err) {
+        res.status(500).json({
+            success: false,
+            message: err.message,
+            redirectURL: '/login'
+        })
+    }
+
+}
+
+module.exports = {
+    loginCustomer, verifyOTP, addDetails
+}
