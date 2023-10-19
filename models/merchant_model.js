@@ -1,7 +1,11 @@
 const mongoose = require('mongoose');
 
 const merchantSchema = new mongoose.Schema({
-    merchantID: Number,
+    merchantID: {
+        type: String,
+        required: true,
+        unique: true
+    },
     merchantName: String,
     merchantType: String,
     merchantEmail: String,
@@ -10,7 +14,7 @@ const merchantSchema = new mongoose.Schema({
     merchantPricingPlan: {
         type: String,
         required: false,
-        enum: ['PlanA', 'PlanB', 'PlanC'] // these are the plans and can changed as per required
+        enum: ['Yearly', 'Monthly', 'Quarterly'] // these are the plans and can changed as per required
     },
     merchantPricingStarted: Date,
     merchantPricingEnded: Date,
@@ -20,7 +24,8 @@ const merchantSchema = new mongoose.Schema({
         enum: ['Red', 'Green', 'Blue'] // these are the plans and can changed as per required
     },
     merchantLogo: String, // containing the url path of the logo
-
+    merchantAssociatedApparels: [String],
+    merchantAssociatedCustomers: [String]
 });
 
 const Merchant = mongoose.model('Merchant', merchantSchema);

@@ -34,7 +34,6 @@ const database = process.env.DATABASE_NAME;
 
 
 // router configuration
-const apparelRoutes = require("./routes/crud")
 const merchantRouter = require('./routes/merchantRoutes')
 const customerRouter = require('./routes/customerRoutes')
 const adminRouter = require('./routes/adminRoutes')
@@ -82,10 +81,6 @@ db.once('open', () => {   //sets up an event listener for the 'open' event of th
     console.log('Connected to MongoDB');
 });
 
-
-
-// routers for crud in apparel
-app.use('/apparel', apparelRoutes)
 
 // merchant routes
 app.use('/merchant', merchantRouter)

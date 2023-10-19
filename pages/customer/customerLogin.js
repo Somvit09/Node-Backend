@@ -19,6 +19,11 @@ function generateRandomOTP() {
     return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
+function generateRandom16DigitNumber() {
+    return Math.floor(1000000000000000 + Math.random() * 9000000000000000).toString();
+}
+
+
 
 // Login function with OTP authentication
 const loginCustomer = async (req, res) => {
@@ -97,7 +102,7 @@ const verifyOTP = async (req, res) => {
             }
             // if customer found
             // Create and sign a JWT token for the newly registered user
-            const token = jwt.sign({ customerId: customer._id }, process.env.JWT_SECRET, {
+            const token = jwt.sign({ customerId: customer.customerID }, process.env.JWT_SECRET, {
                 expiresIn: "1h", // expires in 1 hour
             });
             return res.status(200).json({
@@ -120,14 +125,19 @@ const verifyOTP = async (req, res) => {
 }
 
 const addDetails = async (req, res) => {
+    customerID = generateRandom16DigitNumber()
+    customer = await Customer.findOne({ customerID: customerID })
+    if (customer){
+        customerID = generateRandom16DigitNumber()
+    }
     try {
         const { phoneNumber, email, fullName } = req.body
-        await Customer.create({ customerPhoneNumber: phoneNumber, customerEmail: email, customerName: fullName })
+        await Customer.create({ customerPhoneNumber: phoneNumber, customerEmail: email, customerName: fullName, customerID: customerID })
 
         const customer = await Customer.findOne({ customerPhoneNumber: phoneNumber })
 
         // Create and sign a JWT token for the newly registered user
-        const token = jwt.sign({ customerId: customer._id }, process.env.JWT_SECRET, {
+        const token = jwt.sign({ customerId: customer.customerID }, process.env.JWT_SECRET, {
             expiresIn: "1h", // expires in 1 hour
         });
         return res.status(201).json({

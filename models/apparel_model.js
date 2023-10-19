@@ -1,7 +1,11 @@
 const mongoose = require('mongoose');
 
 const apparalSchema = new mongoose.Schema({
-    apparelID: String,
+    apparelID: {
+        type: String,
+        required: true,
+        unique: true
+    },
     apparelName: String,
     apparelType: String,
     imageUrl: String, // uploading images and store the path
@@ -13,7 +17,8 @@ const apparalSchema = new mongoose.Schema({
         type: String,
         enum: ['active', 'inactive'],
         default: 'active'
-    }
+    },
+    apparelAssociatedMerchant: [String]
 });
 
 const Apparel = mongoose.model('Apparel', apparalSchema);

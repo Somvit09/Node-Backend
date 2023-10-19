@@ -6,8 +6,7 @@ const getAllMerchants = async (req, res) => {
     try {
         const merchants = await Merchant.find().select('-_id -merchantPassword -__v')
         return res.status(200).json({
-            merchants: merchants,
-            success: true
+            merchants: merchants
         })
     } catch (err) {
         return res.status(500).json({
@@ -86,6 +85,40 @@ const merchantCreation = async (req, res) => {
     }
 }
 
+const merchantEdit = async (req, res) => {
+    const { id, name, type, email, newPassword, location, plan, theme, imagePath } = req.body
+    try {
+
+        // Hash the password
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+        await Merchant.findOneAndUpdate({ merchantID: req.params.id }, {
+            merchantID: id,
+            merchantName: name,
+            merchantType: type,
+            merchantEmail: email,
+            merchantColourTheme: theme,
+            merchantLogo: imagePath,
+            merchantLocation: location,
+            merchantPricingPlan: plan,
+            merchantPassword: hashedPassword
+        }, { new: true })
+
+        res.status(200).json({
+            success: true,
+            message: `Merchant updated id - ${id}`,
+        })
+    } catch (err) {
+        res.status(500).json({
+            success: false,
+            error: err.message
+        })
+    }
+}
+
+
+
 module.exports = {
-    getAllMerchants, getAMerchantBySpecificID, merchantCreation
+    getAllMerchants, getAMerchantBySpecificID, merchantCreation, merchantEdit
 }

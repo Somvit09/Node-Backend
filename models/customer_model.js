@@ -17,12 +17,17 @@ const sizeDetailSchema = new mongoose.Schema({
 });
 
 const customerSchema = new mongoose.Schema({
-    customerID: Number,
+    customerID: {
+        type: String,
+        required: true,
+        unique : true
+    },
     customerName: String,
     customerImages: [String],//Array of image urls
     customerSizeDetails: sizeDetailSchema,
     customerPhoneNumber: String,
-    customerEmail: String
+    customerEmail: String,
+    customerAssociatedMerchant: [String]
 });
 
 const Customer = mongoose.model("Customer", customerSchema);
