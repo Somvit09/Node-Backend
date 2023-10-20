@@ -39,14 +39,14 @@ const getSpecificCustomer = async (req, res) => {
 const getAllCustomersForASpecificMerchant = async (req, res) => {
     
     try{
-        const merchant = await Merchant.findOne({ merchantID: req.body.merchantID })
+        const merchant = await Merchant.findOne({ merchantID: req.user.merchantID })
         if (!merchant){
             return res.status(404).json({
                 message: "merchant not found",
                 success: false
             })
         }
-        allCustomers = merchant.merchantAssociatedCustomers
+        allCustomers = await Customer.find({ merchantAssociatedCustomers: merchant.merchantID })
         if (!allCustomers || allCustomers.length === 0) {
             return res.status(404).json({
                 allCustomers,
@@ -66,10 +66,6 @@ const getAllCustomersForASpecificMerchant = async (req, res) => {
             error: err.message
         })
     }
-
-    allCustomers = merchant.merchantAssociatedCustomers
-
-
 }
 
 

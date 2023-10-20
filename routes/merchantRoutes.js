@@ -75,7 +75,7 @@ merchantRouter.delete('/apparel/delete/:id', authenticationToken, deleteApparel)
 merchantRouter.get('/all-apparels', authenticationToken,  getAllApparelsForASpecificMerchant)
 
 // get all customers for a particular merchant
-merchantRouter.get('/all-customers', getAllCustomersForASpecificMerchant)
+merchantRouter.get('/all-customers', authenticationToken, getAllCustomersForASpecificMerchant)
 
 // get all customers
 merchantRouter.get('/customers', getAllCustomers)
