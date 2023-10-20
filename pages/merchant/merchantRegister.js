@@ -5,17 +5,19 @@ require('dotenv').config()
 
 // Register function
 const registerMerchant = async (req, res) => {
-    const { id, name, type, email, password } = req.body;
+    const { merchantID, merchantName, merchantType, merchantEmail,
+        merchantPassword, merchantLocation, merchantPricingPlan,
+        merchantColourTheme, merchantLogo } = req.body;
 
     try {
         // Check if the user already exists
         const existingMerchant = await Merchant.findOne({
-            merchantEmail: email,
-            merchantName: name,
+            merchantEmail: merchantEmail,
+            merchantName: merchantName,
         });
 
         if (existingMerchant) {
-            return res.status(409).json({ 
+            return res.status(409).json({
                 message: "Merchant already exists",
                 redirectURL: '/admin',
             });
@@ -23,34 +25,39 @@ const registerMerchant = async (req, res) => {
 
         // Hash the password
         const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(password, salt);
+        const hashedPassword = await bcrypt.hash(merchantPassword, salt);
 
         // Create a new user with hashed password
         const newMerchant = await Merchant.create({
-            merchantEmail: email,
-            merchantID: id,
-            merchantType: type,
-            merchantName: name,
-            merchantPassword: hashedPassword
+            merchantEmail: merchantEmail,
+            merchantID: merchantID,
+            merchantType: merchantType,
+            merchantName: merchantName,
+            merchantPassword: hashedPassword,
+            merchantLocation: merchantLocation,
+            merchantPricingPlan: merchantPricingPlan,
+            merchantColourTheme: merchantColourTheme,
+            merchantLogo: merchantLogo
         });
 
         // Create and sign a JWT token for the newly registered user
-        const token = jwt.sign({ merchantID: newMerchant._id }, process.env.JWT_SECRET, {
+        const token = jwt.sign({ merchantID: newMerchant.merchantID }, process.env.JWT_SECRET, {
             expiresIn: "1h", // expires in 1 hour
         });
 
         res.status(201).json({
+            newMerchant,
             message: `Merchant registration successfull.`,
             token: token,  // include the JWT token in the response
             redirectURL: `/admin`,
         });
     } catch (error) {
-        res.status(500).json({ 
+        res.status(500).json({
             error: `Failed to register Merchant. ${error.message}`,
             redirectURL: `/register?email=${email}&type=${type}&id=${id}&name=${name}`
         });
     }
 }
 
-module.exports = {registerMerchant}
+module.exports = { registerMerchant }
 

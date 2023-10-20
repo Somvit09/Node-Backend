@@ -92,14 +92,6 @@ app.use('/customer', customerRouter)
 app.use('/admin', adminRouter)
 
 
-
-// authentication required for this route using authenticationToken middleware
-app.post('/protected_route', authenticationToken, (req, res) => {
-    const userEmail = req.user.newOrExistedUser.userEmail
-    console.log(userEmail)
-    res.status(200).json({message: userEmail})
-})
-
 // for uploading a file
 app.post('/upload_image', upload.single('image'), async (req, res) => {
     const fileName = req.file.filename

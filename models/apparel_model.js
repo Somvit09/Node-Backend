@@ -18,7 +18,7 @@ const apparalSchema = new mongoose.Schema({
         enum: ['active', 'inactive'],
         default: 'active'
     },
-    apparelAssociatedMerchant: [String]
+    apparelAssociatedMerchant: String
 });
 
 const Apparel = mongoose.model('Apparel', apparalSchema);

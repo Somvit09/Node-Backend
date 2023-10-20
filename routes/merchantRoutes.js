@@ -1,3 +1,6 @@
+// load varialbles from .env
+require('dotenv').config(); 
+const jwt = require("jsonwebtoken")
 const express = require('express')
 const { merchantLogin } = require('../pages/merchant/merchantLogin')
 const { registerMerchant } = require('../pages/merchant/merchantRegister')
@@ -10,7 +13,33 @@ const {
 } = require('.././pages/merchant/customer')
 
 
+// for protected  or authenticated routes
+function authenticationToken(req, res, next) {
+    const token = req.header("Authorization")
+    if (!token) {
+        return res.status(400).json({
+            error: "Unauthorized"
+        })
+    }
+    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+        if (err) {
+            return res.status(403).json({error: "Token is not valid"})
+        }
+        req.user = decoded
+        console.log(req.user)
+        next()
+    })
+}
+
+
 const merchantRouter = express.Router()
+
+// authentication required for this route using authenticationToken middleware, using for testing
+merchantRouter.post('/protected_route', authenticationToken, (req, res) => {
+    const merchantID = req.user.merchantID
+    console.log(req.user)
+    res.status(200).json({message: merchantID})
+})
 
 // login merchant
 merchantRouter.post('/login', merchantLogin)
@@ -34,16 +63,16 @@ merchantRouter.get('/apparel/:id', getASingleApparel)
 merchantRouter.get('/apparels', getAllApparels)
 
 // create a apparel
-merchantRouter.post('/apparel/create', createApparel)
+merchantRouter.post('/apparel/create', authenticationToken, createApparel)
 
 // update a apparel
-merchantRouter.post('/apparel/:id', updateApparel);
+merchantRouter.post('/apparel/update/:id', authenticationToken, updateApparel);
 
 // delete a apparel
-merchantRouter.delete('/apparel/:id', deleteApparel)
+merchantRouter.delete('/apparel/delete/:id', authenticationToken, deleteApparel)
 
 // get apparels for a particular merchant
-merchantRouter.get('/all-apparels', getAllApparelsForASpecificMerchant)
+merchantRouter.get('/all-apparels', authenticationToken,  getAllApparelsForASpecificMerchant)
 
 // get all customers for a particular merchant
 merchantRouter.get('/all-customers', getAllCustomersForASpecificMerchant)
@@ -53,3 +82,14 @@ merchantRouter.get('/customers', getAllCustomers)
 
 
 module.exports = merchantRouter
+
+
+
+// fetch('/protected_route', {
+//     method: 'POST',
+//     headers: {
+//         'Authorization': `Bearer ${yourJWTToken}`,
+//         'Content-Type': 'application/json',
+//     },
+// });
+// have to add the token to the header section named to be Authorization in the frontend

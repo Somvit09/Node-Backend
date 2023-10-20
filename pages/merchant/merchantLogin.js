@@ -29,7 +29,7 @@ const merchantLogin = async (req, res) => {
              });
         }
         // Create and sign a JWT token for the newly registered user
-        const token = jwt.sign({ merchantID: merchant._id }, process.env.JWT_SECRET, {
+        const token = jwt.sign({ merchantID: merchant.merchantID }, process.env.JWT_SECRET, {
             expiresIn: "1h", // expires in 1 hour
         });
         res.status(200).json({
@@ -44,5 +44,6 @@ const merchantLogin = async (req, res) => {
          });
     }
 }
+
 
 module.exports = {merchantLogin}

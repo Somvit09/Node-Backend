@@ -31,23 +31,30 @@ const loginCustomer = async (req, res) => {
     const otp = generateRandomOTP();
 
     try {
-        // Send OTP via Twilio
-        await client.messages.create({
-            body: `Your otp is ${otp}. It will be valid for 5 minutes.`,
-            from: twilioPhoneNumber,
-            to: phoneNumber,
-        });
         // stored the otp to the model
         // if already otp is in model
         existingOtp = await OTP.findOne({ phoneNumber: phoneNumber })
-        if (!existingOtp){
+        if (!existingOtp) {
             // saving otp to the model
+            console.log(existingOtp)
             await OTP.create({ phoneNumber: phoneNumber, otp: otp });
+            // Send OTP via Twilio
+            await client.messages.create({
+                body: `Your otp is ${otp}. It will be valid for 5 minutes.`,
+                from: twilioPhoneNumber,
+                to: phoneNumber,
+            });
             return res.status(201).json({
                 message: `OTP sent Successfully. otp is ${otp}. It will be valid for 5 minutes.`,
                 redirectURL: `/verify-otp?phoneNumber=${phoneNumber}`,
             });
         }
+        // Send OTP via Twilio
+        await client.messages.create({
+            body: `Your otp is ${existingOtp.otp}. It will be valid for 5 minutes.`,
+            from: twilioPhoneNumber,
+            to: phoneNumber,
+        });
         return res.status(201).json({
             message: `OTP sent Successfully. otp is ${existingOtp.otp}. It will be valid for 5 minutes.`,
             redirectURL: `/verify-otp?phoneNumber=${phoneNumber}`,
@@ -109,7 +116,8 @@ const verifyOTP = async (req, res) => {
                 success: true,
                 message: "OTP verified successfully. Customer is found, redirecting to the virtual tryon.",
                 redirectURL: `/virtual-tryon?phoneNumber=${phoneNumber}`,
-                token: token
+                token: token,
+                customer
             })
         } else {
             res.status(400).json({
@@ -127,7 +135,7 @@ const verifyOTP = async (req, res) => {
 const addDetails = async (req, res) => {
     customerID = generateRandom16DigitNumber()
     customer = await Customer.findOne({ customerID: customerID })
-    if (customer){
+    if (customer) {
         customerID = generateRandom16DigitNumber()
     }
     try {
@@ -144,9 +152,10 @@ const addDetails = async (req, res) => {
             success: true,
             message: "Updated new customer, redirecting to virtual tryon.",
             redirectURL: `/virtual-tryon?phoneNumber=${phoneNumber}`,
-            token: token
+            token: token,
+            customer
         })
-    } catch(err) {
+    } catch (err) {
         res.status(500).json({
             success: false,
             message: err.message,

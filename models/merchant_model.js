@@ -16,7 +16,7 @@ const merchantSchema = new mongoose.Schema({
         required: false,
         enum: ['Yearly', 'Monthly', 'Quarterly'] // these are the plans and can changed as per required
     },
-    merchantPricingStarted: Date,
+    merchantPricingStarted: Date,// need to think about this
     merchantPricingEnded: Date,
     merchantColourTheme: {
         type: String,
