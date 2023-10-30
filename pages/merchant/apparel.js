@@ -229,7 +229,6 @@ const uploadCSV = async (req, res) => {
 
         const data = await parserPromise
 
-        const newApparelIds = []
         const existingApparels = []
         for (const row of data) {
             if (requiredFields.every((field) => field in row)) {
@@ -256,21 +255,14 @@ const uploadCSV = async (req, res) => {
                         aaprelIDBySystem: id,
                         apparelAssociatedMerchant: req.user.merchantID,
                     });
-                    if (!newApparelIds.includes(row['apparel id'])) {
-                        newApparelIds.push(row['apparel id']);
+                    if (!merchant.merchantAssociatedApparels.includes(row['apparel id'])) {
+                        merchant.merchantAssociatedApparels.push(row['apparel id']);
+                    } else {
+                        console.log(`Apparel ID ${row['apparel id']} is already associated with merchant`)
                     }
                 }
             }
         }
-
-        for (const id of newApparelIds) {
-            if (!merchant.merchantAssociatedApparels.includes(id)) {
-                merchant.merchantAssociatedApparels.push(id);
-            } else {
-                console.log(`Apparel ID ${id} is already associated with merchant`)
-            }
-        }
-
         await merchant.save();
         console.log(existingApparels)
         res.status(201).json({
