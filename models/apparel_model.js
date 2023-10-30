@@ -4,6 +4,10 @@ const apparalSchema = new mongoose.Schema({
     apparelID: {
         type: String,
         required: true,
+    },
+    aaprelIDBySystem: {
+        type: String,
+        required: true,
         unique: true
     },
     apparelName: String,

@@ -1,12 +1,13 @@
 // load varialbles from .env
 require('dotenv').config(); 
+const multer = require('multer'); // middleware for handling file uploads
 const jwt = require("jsonwebtoken")
 const express = require('express')
 const { merchantLogin } = require('../pages/merchant/merchantLogin')
 const { registerMerchant } = require('../pages/merchant/merchantRegister')
 const { forgotPassword, verifyPasswordResetOTP, resendOTP } = require('../pages/merchant/forgotPassword')
 const { 
-    getASingleApparel, getAllApparels, createApparel, updateApparel, deleteApparel, getAllApparelsForASpecificMerchant
+    getASingleApparel, getAllApparels, createApparel, updateApparel, deleteApparel, getAllApparelsForASpecificMerchant, uploadCSV
 } = require('.././pages/merchant/apparel')
 const {
     getAllCustomers, getAllCustomersForASpecificMerchant
@@ -30,6 +31,24 @@ function authenticationToken(req, res, next) {
         next()
     })
 }
+
+
+// storage middleware for uploading images
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, 'uploads/')
+    },
+    filename: (req, file, cb) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
+        cb(null, uniqueSuffix + '-' + file.originalname)
+    },
+})
+
+// creating a multer instance with the specified storage
+const upload = multer({
+    storage: storage
+})
+
 
 
 const merchantRouter = express.Router()
@@ -80,6 +99,9 @@ merchantRouter.get('/all-customers', authenticationToken, getAllCustomersForASpe
 // get all customers
 merchantRouter.get('/customers', getAllCustomers)
 
+// upload a csv file
+merchantRouter.post('/upload-csv', upload.single('csvFile'), authenticationToken, uploadCSV)
+
 
 module.exports = merchantRouter
 
@@ -88,7 +110,7 @@ module.exports = merchantRouter
 // fetch('/protected_route', {
 //     method: 'POST',
 //     headers: {
-//         'Authorization': `Bearer ${yourJWTToken}`,
+//         'Authorization': `${yourJWTToken}`,
 //         'Content-Type': 'application/json',
 //     },
 // });

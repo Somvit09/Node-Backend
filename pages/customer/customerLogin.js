@@ -133,8 +133,8 @@ const verifyOTP = async (req, res) => {
 }
 
 const addDetails = async (req, res) => {
-    customerID = generateRandom16DigitNumber()
-    customer = await Customer.findOne({ customerID: customerID })
+    const customerID = generateRandom16DigitNumber()
+    const customer = await Customer.findOne({ customerID: customerID })
     if (customer) {
         customerID = generateRandom16DigitNumber()
     }

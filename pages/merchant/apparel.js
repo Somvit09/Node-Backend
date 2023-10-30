@@ -1,5 +1,12 @@
 const Apparel = require("../../models/apparel_model");
 const Merchant = require("../../models/merchant_model");
+const fs = require('fs')
+const fastcsv = require("fast-csv")
+
+// get 16 digit random number
+function generateRandom16DigitNumber() {
+    return Math.floor(1000000000000000 + Math.random() * 9000000000000000).toString();
+}
 
 
 // get all apparel with their details
@@ -43,11 +50,12 @@ const getASingleApparel = async (req, res) => {
 // add new apparel
 const createApparel = async (req, res) => {
     const { apparelID, apparelName, apparelType, imageUrl } = req.body;
+    const aaprelIDBySystem = generateRandom16DigitNumber()
     const merchantID = req.user.merchantID
     const merchant = await Merchant.findOne({ merchantID: merchantID })
     try {
         // Check if an apparel item with the same ID already exists
-        const existingApparel = await Apparel.findOne({ apparelID: apparelID });
+        const existingApparel = await Apparel.findOne({ aaprelIDBySystem: aaprelIDBySystem, apparelID: apparelID });
         if (existingApparel) {
             return res.status(409).json({
                 message: "Apparel already exists",
@@ -61,6 +69,7 @@ const createApparel = async (req, res) => {
             apparelName,
             imageUrl,
             apparelID,
+            aaprelIDBySystem,
             apparelAssociatedMerchant: merchantID,
             apparelType,
             uploadDate: Date.now(),
@@ -70,7 +79,7 @@ const createApparel = async (req, res) => {
         await Apparel.create(newApparel);
 
         // save the new apparel to the merchant
-        if (!merchant.merchantAssociatedApparels.includes(apparelID)){
+        if (!merchant.merchantAssociatedApparels.includes(apparelID)) {
             merchant.merchantAssociatedApparels.push(apparelID)
 
             await merchant.save()
@@ -129,22 +138,24 @@ const updateApparel = async (req, res) => {
 
 
 // delete the specific apparel
-const deleteApparel = async(req,res)=>{
-    const id =req.params.id;
+const deleteApparel = async (req, res) => {
+    const id = req.params.id;
     const merchantID = req.user.merchantID
-    try{
-        const delApparel = await Apparel.findOneAndDelete({apparelID:id});
+    try {
+        const delApparel = await Apparel.findOneAndDelete({ apparelID: id });
         // Remove the apparel ID from the merchant's associated apparels array
-        await Merchant.updateOne({ 
-            merchantID: merchantID }, 
-            { $pull: { merchantAssociatedApparels: id } 
-        });
+        await Merchant.updateOne({
+            merchantID: merchantID
+        },
+            {
+                $pull: { merchantAssociatedApparels: id }
+            });
         return res.status(200).json({
-            apparel:delApparel,
-            message:`Apparel with id ${id} is deleted.`,
-            success:true
+            apparel: delApparel,
+            message: `Apparel with id ${id} is deleted.`,
+            success: true
         })
-    }catch (err) {
+    } catch (err) {
         res.status(500).json({
             error: err.message,
             success: false
@@ -154,15 +165,15 @@ const deleteApparel = async(req,res)=>{
 
 // get all the apparels which are associated with a particular merchant
 
-const getAllApparelsForASpecificMerchant = async (req,res) => {
-    merchant = await Merchant.findOne({ merchantID: req.user.merchantID })
-    if (!merchant){
+const getAllApparelsForASpecificMerchant = async (req, res) => {
+    const merchant = await Merchant.findOne({ merchantID: req.user.merchantID })
+    if (!merchant) {
         return res.status(404).json({
             message: "Merchant not found",
             status: false
         })
     }
-    try{
+    try {
         const apparels = await Apparel.find({ apparelAssociatedMerchant: merchant.merchantID })
         if (!apparels || apparels.length === 0) {
             return res.status(404).json({
@@ -175,15 +186,109 @@ const getAllApparelsForASpecificMerchant = async (req,res) => {
             apparels,
             success: true
         })
-    } catch(err) {
+    } catch (err) {
         return res.status(500).json({
             success: false,
             error: err.message
         })
     }
-    
+
 }
 
-module.exports ={
-    getAllApparels,getASingleApparel,createApparel,updateApparel,deleteApparel, getAllApparelsForASpecificMerchant
+
+const uploadCSV = async (req, res) => {
+    try {
+        const merchant = await Merchant.findOne({ merchantID: req.user.merchantID })
+        if (!req.file) {
+            return res.status(404).json({
+                success: false,
+                error: "File not found",
+            });
+        }
+
+        const csvFilePath = req.file.path;
+        const requiredFields = ['apparel name', 'type', 'apparel image', 'apparel id']
+
+        const csvParser = fastcsv.parse({ headers: true })
+        const csvData = [];
+
+        const parserPromise = new Promise((resolve, reject) => {
+            csvParser
+                .on('data', (row) => {
+                    csvData.push(row);
+                })
+                .on('end', () => {
+                    resolve(csvData);
+                })
+                .on('error', (err) => {
+                    reject(err);
+                });
+
+            fs.createReadStream(csvFilePath).pipe(csvParser)
+        });
+
+        const data = await parserPromise
+
+        const newApparelIds = []
+        const existingApparels = []
+        for (const row of data) {
+            if (requiredFields.every((field) => field in row)) {
+                const id = generateRandom16DigitNumber()
+                const existedSystemId = await Apparel.findOne({ aaprelIDBySystem: id })
+                const existedApparel = await Apparel.findOne({
+                    apparelID: row['apparel id'],
+                    apparelAssociatedMerchant: req.user.merchantID
+                })
+
+                if(existedSystemId){
+                    id = generateRandom16DigitNumber()
+                }
+
+                if (existedApparel) {
+                    existingApparels.push(row['apparel id'])
+                } else {
+                    await Apparel.create({
+                        apparelID: row['apparel id'],
+                        apparelName: row['apparel name'],
+                        imageUrl: row['apparel image'],
+                        apparelType: row['type'],
+                        uploadDate: new Date(),
+                        aaprelIDBySystem: id,
+                        apparelAssociatedMerchant: req.user.merchantID,
+                    });
+                    if (!newApparelIds.includes(row['apparel id'])) {
+                        newApparelIds.push(row['apparel id']);
+                    }
+                }
+            }
+        }
+
+        for (const id of newApparelIds) {
+            if (!merchant.merchantAssociatedApparels.includes(id)) {
+                merchant.merchantAssociatedApparels.push(id);
+            } else {
+                console.log(`Apparel ID ${id} is already associated with merchant`)
+            }
+        }
+
+        await merchant.save();
+        console.log(existingApparels)
+        res.status(201).json({
+            success: true,
+            message: "CSV uploaded successfully",
+        });
+    } catch (err) {
+        res.status(500).json({
+            success: false,
+            error: err.message,
+        })
+    }
+}
+
+
+
+
+
+module.exports = {
+    getAllApparels, getASingleApparel, createApparel, updateApparel, deleteApparel, getAllApparelsForASpecificMerchant, uploadCSV
 }

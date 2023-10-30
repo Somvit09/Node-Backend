@@ -1,5 +1,6 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const fastcsv = require("fast-csv")
 const cors = require('cors'); //Cross-Origin Resource Sharing (CORS) middleware
 const multer = require('multer'); // middleware for handling file uploads
 const jwt = require("jsonwebtoken")
@@ -93,16 +94,16 @@ app.use('/admin', adminRouter)
 
 
 // for uploading a file
-app.post('/upload_image', upload.single('image'), async (req, res) => {
-    const fileName = req.file.filename
+app.post('/upload_image', upload.any('image'), async (req, res) => {
+    const files = req.files
     try {
-        if (!fileName) {
+        if (!files || files.length === 0) {
             return res.status(400).json({error: "No file Uploaded."})
         } 
-        const imageUrl = '/uploads/' + fileName
-        console.log(imageUrl)
+        const imageUrls = files.map(file => '/uploads/' + file.filename)
+        console.log(imageUrls)
         res.status(201).json({
-            'imageURL': imageUrl,
+            'imageURL': imageUrls,
             'success': "Uploaded"
         })
 
@@ -111,6 +112,16 @@ app.post('/upload_image', upload.single('image'), async (req, res) => {
     }
 })
 
+
+app.post('/upload-csv', upload.single('csvFile'), async (req, res)=> {
+    if(!req.file) {
+        return res.status(404).json({
+            success: false,
+            error: "Not found"
+        })
+    }
+    const { path: csvFilePath } = req.file
+})
 
 
 app.listen(port, () => {

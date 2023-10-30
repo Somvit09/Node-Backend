@@ -3,11 +3,20 @@ const jwt = require("jsonwebtoken")
 const bcrypt = require("bcrypt")
 require('dotenv').config()
 
+
+function generateRandom16DigitNumber() {
+    return Math.floor(1000000000000000 + Math.random() * 9000000000000000).toString();
+}
+
+
 // Register function
 const registerMerchant = async (req, res) => {
-    const { merchantID, merchantName, merchantType, merchantEmail,
+    const { merchantName, merchantType, merchantEmail,
         merchantPassword, merchantLocation, merchantPricingPlan,
         merchantColourTheme, merchantLogo } = req.body;
+
+    const merchantID = generateRandom16DigitNumber()
+    console.log(merchantID)
 
     try {
         // Check if the user already exists
@@ -21,6 +30,10 @@ const registerMerchant = async (req, res) => {
                 message: "Merchant already exists",
                 redirectURL: '/admin',
             });
+        }
+        const ifIDExisted = await Merchant.findOne({ merchantID: merchantID })
+        if (ifIDExisted){
+            const merchantID = generateRandom16DigitNumber()
         }
 
         // Hash the password
