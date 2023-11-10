@@ -11,13 +11,19 @@ const merchantSchema = new mongoose.Schema({
     merchantEmail: String,
     merchantPassword: String,
     merchantLocation: String,
+    merchantActive: {
+        type: String,
+        default: 'inactive',
+        enum: ['active', 'inactive'],
+        required: true
+    },
     merchantPricingPlan: {
         type: String,
         required: false,
         enum: ['Yearly', 'Monthly', 'Quarterly'] // these are the plans and can changed as per required
     },
-    merchantPricingStarted: Date,// need to think about this
-    merchantPricingEnded: Date,
+    merchantPricingStarted: String,// need to think about this
+    merchantPricingEnded: String,
     merchantColourTheme: {
         type: String,
         required: false,

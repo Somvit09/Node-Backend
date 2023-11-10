@@ -16,7 +16,6 @@ const registerMerchant = async (req, res) => {
         merchantColourTheme, merchantLogo } = req.body;
 
     const merchantID = generateRandom16DigitNumber()
-    console.log(merchantID)
 
     try {
         // Check if the user already exists

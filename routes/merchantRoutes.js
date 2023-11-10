@@ -12,6 +12,7 @@ const {
 const {
     getAllCustomers, getAllCustomersForASpecificMerchant
 } = require('.././pages/merchant/customer')
+const getAMerchantBySpecificID = require('../pages/merchant/merchantInfo')
 
 
 // for protected  or authenticated routes
@@ -71,6 +72,9 @@ merchantRouter.post('/forgot-password', forgotPassword)
 
 // verify password
 merchantRouter.post('/verify-password', verifyPasswordResetOTP)
+
+// get a specific merchant details
+merchantRouter.post('/profile', authenticationToken, getAMerchantBySpecificID)
 
 // resend otp 
 merchantRouter.post('/resend-otp', resendOTP)

@@ -35,7 +35,7 @@ const merchantLogin = async (req, res) => {
         res.status(200).json({
             message: `Login Successfull.`,
             token: token,  // include the JWT token in the response
-            redirectURL: `/admin/merchant/${email}` // need to think about the email.,
+            redirectURL: `/merchant/all-apparels` // need to think about the email.,
         });
     } catch (error) {
         res.status(500).json({ 

@@ -2,8 +2,11 @@ require('dotenv').config();
 const jwt = require("jsonwebtoken")
 const express = require("express")
 const {
-    getAllMerchants, getAMerchantBySpecificID, merchantCreation, merchantEdit
+    getAllMerchants, getAMerchantBySpecificID, merchantCreation, merchantEdit, planCreation
 } = require("../pages/admin/merchant")
+const adminRegister = require('../pages/admin/adminRegister')
+const adminLogin = require('../pages/admin/adminLogin')
+
 
 
 const adminRouter = express.Router()
@@ -26,23 +29,27 @@ function authenticationToken(req, res, next) {
     })
 }
 
-// authentication required for this route using authenticationToken middleware, using for testing
-adminRouter.post('/protected_route', authenticationToken, (req, res) => {
-    const customerID = req.user.customerId
-    res.status(200).json({message: customerID})
-})
+
+// login
+adminRouter.post('/login', adminLogin)
+
+// register
+adminRouter.post('/register/secureway/appliedOnlyForAdmin', adminRegister)
 
 // get all merchants
-adminRouter.get('/merchants', getAllMerchants)
+adminRouter.get('/merchants', authenticationToken, getAllMerchants)
 
 // get a merchant by merchantID
-adminRouter.get('/merchant/:id', getAMerchantBySpecificID)
+adminRouter.get('/merchant/:id', authenticationToken, getAMerchantBySpecificID)
 
 // create a merchant
-adminRouter.post('/merchant/create', merchantCreation)
+adminRouter.post('/merchant/create', authenticationToken, merchantCreation)
 
 // merchant profile update
-adminRouter.post('/merchant/edit/:id', merchantEdit)
+adminRouter.post('/merchant/edit/:id', authenticationToken, merchantEdit)
+
+// plan creation
+adminRouter.post('/merchant/plan-create/:id', authenticationToken, planCreation)
 
 
 

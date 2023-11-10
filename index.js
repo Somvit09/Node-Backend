@@ -4,6 +4,7 @@ const fastcsv = require("fast-csv")
 const cors = require('cors'); //Cross-Origin Resource Sharing (CORS) middleware
 const multer = require('multer'); // middleware for handling file uploads
 const jwt = require("jsonwebtoken")
+const fs = require('fs')
 
 const app = express();
 
@@ -29,9 +30,12 @@ const upload = multer({
 
 
 // load varialbles from .env
-require('dotenv').config(); 
+require('dotenv').config();
 const port = process.env.PORT;
 const database = process.env.DATABASE_NAME;
+
+// models
+const Merchant = require('./models/merchant_model')
 
 
 // router configuration
@@ -44,43 +48,39 @@ const adminRouter = require('./routes/adminRoutes')
 app.use(express.json());
 // Configure CORS
 const corsOptions = {
-    origin: 'http://localhost:3000', // Update with your frontend's URL
+    origin: 'http://localhost:5173', // Update with your frontend's URL
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true, // Enable CORS credentials (cookies, authorization headers, etc.)
-  };
-  
-app.use(cors(corsOptions));
+};
 
-// for protected  or authenticated routes
-function authenticationToken(req, res, next) {
-    const token = req.header("Authorization")
-    if (!token) {
-        return res.status(400).json({
-            error: "Unauthorized"
-        })
-    }
-    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-        if (err) {
-            return res.status(403).json({error: "Token is not valid"})
-        }
-        req.user = decoded
-        //console.log(req.user)
-        next()
-    })
-}
+app.use(cors(corsOptions));
 
 
 // MongoDB Connection
-mongoose.connect(process.env.MONGO_URI + database, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-});
+try {
+    // MongoDB Connection
+    mongoose.connect(process.env.MONGO_URI, {}).catch(error => {
+        console.log(error)
+    });
 
-const db = mongoose.connection;
-db.on('error', console.error.bind(console, 'MongoDB connection error:')); //This line sets up an event listener for the 'error' event of the MongoDB database 
-db.once('open', () => {   //sets up an event listener for the 'open' event of the MongoDB database 
-    console.log('Connected to MongoDB');
-});
+    const db = mongoose.connection
+
+    db.on('error', (err) => {
+        console.error('MongoDB connection error:', err);
+        // Log the error or handle it appropriately without stopping the application
+        // For instance, you can choose to log the error and continue the server running
+    });
+
+    db.once('open', () => {
+        console.log('Connected to MongoDB');
+        db.useDb(database)
+        // Perform additional actions when the MongoDB connection is successful
+    });
+} catch (error) {
+    console.error('Error connecting to MongoDB:', error);
+    // Handle the error as needed (logging, custom response, etc.)
+}
+
 
 
 // merchant routes
@@ -98,8 +98,8 @@ app.post('/upload_image', upload.any('image'), async (req, res) => {
     const files = req.files
     try {
         if (!files || files.length === 0) {
-            return res.status(400).json({error: "No file Uploaded."})
-        } 
+            return res.status(400).json({ error: "No file Uploaded." })
+        }
         const imageUrls = files.map(file => '/uploads/' + file.filename)
         console.log(imageUrls)
         res.status(201).json({
@@ -107,21 +107,44 @@ app.post('/upload_image', upload.any('image'), async (req, res) => {
             'success': "Uploaded"
         })
 
-    } catch(err) {
-        res.status(500).json({error: err.message})
+    } catch (err) {
+        res.status(500).json({ error: err.message })
     }
 })
 
 
-app.post('/upload-csv', upload.single('csvFile'), async (req, res)=> {
-    if(!req.file) {
-        return res.status(404).json({
-            success: false,
-            error: "Not found"
-        })
+// automatically checks and updates the plans
+const checkAndUpdateMerchantStatus = async () => {
+    try {
+        console.log('Checking and updating merchant status...');
+
+        const currentDate = new Date(); // Get the current date
+
+        // Find merchants with plans that have ended
+        const expiredMerchants = await Merchant.find({
+            merchantPricingEnded: { $lt: currentDate },
+            merchantActive: 'active'
+        });
+
+        if (expiredMerchants.length > 0) {
+            // Update merchantActive status to 'inactive' for expired plans
+            expiredMerchants.forEach(async (merchant) => {
+                merchant.merchantActive = 'inactive';
+                await merchant.save();
+            });
+
+            console.log('Updated merchantActive status for expired plans.');
+        } else {
+            console.log('No expired plans found.');
+        }
+    } catch (err) {
+        console.error('Error checking and updating merchant status:', err);
     }
-    const { path: csvFilePath } = req.file
-})
+};
+
+// Set up a scheduler to run the checkAndUpdateMerchantStatus function every 24 hours
+setInterval(checkAndUpdateMerchantStatus, 24 * 60 * 60 * 1000); // Run every 24 hours
+
 
 
 app.listen(port, () => {
