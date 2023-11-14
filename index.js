@@ -59,7 +59,7 @@ app.use(cors(corsOptions));
 // MongoDB Connection
 try {
     // MongoDB Connection
-    mongoose.connect(process.env.MONGO_URI, {}).catch(error => {
+    mongoose.connect(process.env.MONGO_URI_LOCAL, {}).catch(error => {
         console.log(error)
     });
 

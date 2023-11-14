@@ -28,7 +28,7 @@ const getAllApparels = async (req, res) => {
 // get a apparel by specific id
 const getASingleApparel = async (req, res) => {
     try {
-        const apparel = await Apparel.findOne({ apparelID: req.params.id })
+        const apparel = await Apparel.findOne({ id: req.params.id })
         if (!apparel) {
             return res.status(404).json({
                 message: "Apparel not found.",
@@ -55,7 +55,7 @@ const createApparel = async (req, res) => {
     const merchant = await Merchant.findOne({ merchantID: merchantID })
     try {
         // Check if an apparel item with the same ID already exists
-        const existingApparel = await Apparel.findOne({ aaprelIDBySystem: aaprelIDBySystem, apparelID: apparelID });
+        const existingApparel = await Apparel.findOne({ aaprelIDBySystem: aaprelIDBySystem, id: apparelID });
         if (existingApparel) {
             return res.status(409).json({
                 message: "Apparel already exists",
@@ -87,7 +87,7 @@ const createApparel = async (req, res) => {
 
         return res.status(201).json({
             message: `Apparel with id ${apparelID} added.`,
-            apparel: await Apparel.findOne({ apparelID: apparelID })
+            apparel: await Apparel.findOne({ id: apparelID })
         });
     } catch (err) {
         return res.status(500).json({
@@ -102,13 +102,12 @@ const createApparel = async (req, res) => {
 const updateApparel = async (req, res) => {
     try {
         // Extract updated data from the request body
-        const { status, apparelName, apparelType, imageUrl, apparelAssociatedMerchant } = req.body;
+        const { status, apparelName, apparelType, imageUrl } = req.body;
 
         // Create a new object with the updated data and the current date for uploadDate
         const updatedApparel = {
             apparelName,
             imageUrl,
-            apparelAssociatedMerchant,
             apparelType,
             status,
             uploadDate: Date.now()
@@ -116,7 +115,7 @@ const updateApparel = async (req, res) => {
 
         // Find and update the apparel item by its unique ID
         const updatedData = await Apparel.findOneAndUpdate(
-            { apparelID: req.params.id },
+            { id: req.params.id },
             updatedApparel,
             { new: true }
         );
@@ -142,7 +141,7 @@ const deleteApparel = async (req, res) => {
     const id = req.params.id;
     const merchantID = req.user.merchantID
     try {
-        const delApparel = await Apparel.findOneAndDelete({ apparelID: id });
+        const delApparel = await Apparel.findOneAndDelete({ id: id });
         // Remove the apparel ID from the merchant's associated apparels array
         await Merchant.updateOne({
             merchantID: merchantID
@@ -235,7 +234,7 @@ const uploadCSV = async (req, res) => {
                 const id = generateRandom16DigitNumber()
                 const existedSystemId = await Apparel.findOne({ aaprelIDBySystem: id })
                 const existedApparel = await Apparel.findOne({
-                    apparelID: row['apparel id'],
+                    id: row['apparel id'],
                     apparelAssociatedMerchant: req.user.merchantID
                 })
 
@@ -247,7 +246,7 @@ const uploadCSV = async (req, res) => {
                     existingApparels.push(row['apparel id'])
                 } else {
                     await Apparel.create({
-                        apparelID: row['apparel id'],
+                        id: row['apparel id'],
                         apparelName: row['apparel name'],
                         imageUrl: row['apparel image'],
                         apparelType: row['type'],

@@ -10,7 +10,7 @@ const {
     getASingleApparel, getAllApparels, createApparel, updateApparel, deleteApparel, getAllApparelsForASpecificMerchant, uploadCSV
 } = require('.././pages/merchant/apparel')
 const {
-    getAllCustomers, getAllCustomersForASpecificMerchant
+    getAllCustomers, getAllCustomersForASpecificMerchant, customerUploadCSV
 } = require('.././pages/merchant/customer')
 const getAMerchantBySpecificID = require('../pages/merchant/merchantInfo')
 
@@ -105,6 +105,9 @@ merchantRouter.get('/customers', getAllCustomers)
 
 // upload a csv file
 merchantRouter.post('/upload-csv', upload.single('csvFile'), authenticationToken, uploadCSV)
+
+// for testing, upload csv customer
+merchantRouter.post('/customer/upload-csv', upload.single('csvFile'), authenticationToken, customerUploadCSV)
 
 
 module.exports = merchantRouter

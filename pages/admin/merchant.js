@@ -44,7 +44,7 @@ const getAMerchantBySpecificID = async (req, res) => {
 }
 
 const merchantCreation = async (req, res) => {
-    const { name, type, email, password, location, theme, imagePath } = req.body;
+    const { name, type, email, password, location, theme, imagePath, designation } = req.body;
     const merchantId = generateRandom16DigitNumber()
     const existingMerchantId = Merchant.findOne({ merchantID: merchantId })
     try {
@@ -77,9 +77,10 @@ const merchantCreation = async (req, res) => {
             merchantPassword: hashedPassword,
             merchantLocation: location,
             merchantColourTheme: theme,
-            merchantLogo: imagePath
+            merchantLogo: imagePath,
+            merchantDesignation: designation
         });
-        newMerchant.save()
+        console.log(newMerchant)
         return res.status(201).json({
             success: true,
             message: `Merchant created id: ${newMerchant.merchantID}`,
@@ -94,12 +95,8 @@ const merchantCreation = async (req, res) => {
 }
 
 const merchantEdit = async (req, res) => {
-    const { name, type, email, newPassword, location, plan, theme, imagePath } = req.body
+    const { name, type, email, location, theme, imagePath } = req.body
     try {
-
-        // Hash the password
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(newPassword, salt);
 
         await Merchant.findOneAndUpdate({ merchantID: req.params.id }, {
             merchantName: name,
@@ -108,8 +105,6 @@ const merchantEdit = async (req, res) => {
             merchantColourTheme: theme,
             merchantLogo: imagePath,
             merchantLocation: location,
-            merchantPricingPlan: plan,
-            merchantPassword: hashedPassword
         }, { new: true })
 
         res.status(200).json({

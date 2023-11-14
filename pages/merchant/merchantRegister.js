@@ -13,7 +13,7 @@ function generateRandom16DigitNumber() {
 const registerMerchant = async (req, res) => {
     const { merchantName, merchantType, merchantEmail,
         merchantPassword, merchantLocation, merchantPricingPlan,
-        merchantColourTheme, merchantLogo } = req.body;
+        merchantColourTheme, merchantLogo, merchantFirstName, merchantLastName, merchantDesignation } = req.body;
 
     const merchantID = generateRandom16DigitNumber()
 
@@ -49,7 +49,10 @@ const registerMerchant = async (req, res) => {
             merchantLocation: merchantLocation,
             merchantPricingPlan: merchantPricingPlan,
             merchantColourTheme: merchantColourTheme,
-            merchantLogo: merchantLogo
+            merchantLogo: merchantLogo,
+            merchantFirstName: merchantFirstName,
+            merchantLastName: merchantLastName,
+            merchantDesignation: merchantDesignation
         });
 
         // Create and sign a JWT token for the newly registered user
