@@ -101,7 +101,7 @@ const verifyOTP = async (req, res) => {
                 return res.status(201).json({
                     success: true,
                     message: "OTP verified successfully. Customer is not found, redirecting to the add details.",
-                    redirectURL: `/uploadphoto`,
+                    redirectURL: `/finish`,
                 })
             }
             // if customer found
