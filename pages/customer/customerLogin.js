@@ -112,7 +112,7 @@ const verifyOTP = async (req, res) => {
             return res.status(200).json({
                 success: true,
                 message: "OTP verified successfully. Customer is found, redirecting to the virtual tryon.",
-                redirectURL: `/multipage`,
+                redirectURL: `/uploadphoto`,
                 token: token,
                 customer
             })
@@ -148,7 +148,7 @@ const addDetails = async (req, res) => {
         return res.status(201).json({
             success: true,
             message: "Updated new customer, redirecting to virtual tryon.",
-            redirectURL: `/multipage`,
+            redirectURL: `/uploadphoto`,
             token: token,
             customer
         })
