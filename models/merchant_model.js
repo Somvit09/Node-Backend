@@ -7,8 +7,6 @@ const merchantSchema = new mongoose.Schema({
         unique: true
     },
     merchantName: String,
-    merchantFirstName: String,
-    merchantLastName: String,
     merchantType: String,
     merchantEmail: String,
     merchantPassword: String,

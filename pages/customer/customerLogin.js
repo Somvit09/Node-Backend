@@ -46,7 +46,6 @@ const loginCustomer = async (req, res) => {
             });
             return res.status(201).json({
                 message: `OTP sent Successfully. otp is ${otp}. It will be valid for 5 minutes.`,
-                redirectURL: `/verify-otp?phoneNumber=${phoneNumber}`,
             });
         }
         // Send OTP via Twilio
@@ -57,14 +56,12 @@ const loginCustomer = async (req, res) => {
         });
         return res.status(201).json({
             message: `OTP sent Successfully. otp is ${existingOtp.otp}. It will be valid for 5 minutes.`,
-            redirectURL: `/verify-otp?phoneNumber=${phoneNumber}`,
         });
 
     } catch (error) {
         console.log(`Failed to send OTP to the phone number ${phoneNumber}.`, error);
         res.status(500).json({
             error: `Failed to login user. Please try after some time. ${error.message}`,
-            redirectURL: "/login"
         });
     }
 }
@@ -85,7 +82,7 @@ const verifyOTP = async (req, res) => {
             return res.status(404).json({
                 success: false,
                 message: "OTP has expired, please retry again with newly generated OTP.",
-                redirectURL: `/login?phoneNumber=${phoneNumber}`
+                redirectURL: `/signup`
             })
         }
         if (storedOTP.otp) {
@@ -93,7 +90,7 @@ const verifyOTP = async (req, res) => {
                 return res.status(404).json({
                     success: false,
                     message: "Otp is incorrect.",
-                    redirectURL: `/verify-otp?phoneNumber=${phoneNumber}`
+                    redirectURL: `/otp`
                 })
             }
         }
@@ -104,7 +101,7 @@ const verifyOTP = async (req, res) => {
                 return res.status(201).json({
                     success: true,
                     message: "OTP verified successfully. Customer is not found, redirecting to the add details.",
-                    redirectURL: `/add-details?phoneNumber=${phoneNumber}`,
+                    redirectURL: `/finish`,
                 })
             }
             // if customer found
@@ -115,14 +112,14 @@ const verifyOTP = async (req, res) => {
             return res.status(200).json({
                 success: true,
                 message: "OTP verified successfully. Customer is found, redirecting to the virtual tryon.",
-                redirectURL: `/virtual-tryon?phoneNumber=${phoneNumber}`,
+                redirectURL: `/multipage`,
                 token: token,
                 customer
             })
         } else {
             res.status(400).json({
                 error: "error occured",
-                redirectURL: `/login/?phoneNumber=${phoneNumber}`
+                redirectURL: `/signup`
             });
         }
     } catch (err) {
@@ -151,7 +148,7 @@ const addDetails = async (req, res) => {
         return res.status(201).json({
             success: true,
             message: "Updated new customer, redirecting to virtual tryon.",
-            redirectURL: `/virtual-tryon?phoneNumber=${phoneNumber}`,
+            redirectURL: `/multipage`,
             token: token,
             customer
         })
@@ -159,7 +156,7 @@ const addDetails = async (req, res) => {
         res.status(500).json({
             success: false,
             message: err.message,
-            redirectURL: '/login'
+            redirectURL: '/signup'
         })
     }
 
