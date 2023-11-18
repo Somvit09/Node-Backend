@@ -48,7 +48,7 @@ const adminRouter = require('./routes/adminRoutes')
 app.use(express.json());
 // Configure CORS
 const corsOptions = {
-    origin: 'https://majestic-granita-487675.netlify.app/', // Update with your frontend's URL
+    origin: 'https://deploy-preview-10--harmonious-pastelito-cddafb.netlify.app/', // Update with your frontend's URL
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true, // Enable CORS credentials (cookies, authorization headers, etc.)
 };
