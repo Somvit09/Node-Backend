@@ -159,9 +159,37 @@ const addDetails = async (req, res) => {
             redirectURL: '/signup'
         })
     }
-
 }
 
+// Resend OTP API
+const resendOTP = async (req, res) => {
+    const { phoneNumber } = req.body;
+    const newOTP = generateRandomOTP()
+
+    try {
+        existingOtp = await OTP.findOne({ phoneNumber: phoneNumber })
+        if (existingOtp) {
+            await OTP.findOneAndDelete({ phoneNumber: phoneNumber })
+        }
+        await OTP.create({ phoneNumber: phoneNumber, otp: newOTP });
+        // Send OTP via Twilio
+        await client.messages.create({
+            body: `Your otp is ${newOTP}. It will be valid for 5 minutes.`,
+            from: twilioPhoneNumber,
+            to: phoneNumber,
+        });
+        return res.status(201).json({
+            message: `OTP sent Successfully. otp is ${newOTP}. It will be valid for 5 minutes.`,
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({
+            error: `Failed to send OTP. Please try again later. ${err.message}`,
+        });
+    }
+}
+
+
 module.exports = {
-    loginCustomer, verifyOTP, addDetails
+    loginCustomer, verifyOTP, addDetails, resendOTP
 }

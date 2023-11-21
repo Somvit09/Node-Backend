@@ -1,7 +1,7 @@
 require('dotenv').config(); 
 const jwt = require("jsonwebtoken")
 const express = require("express")
-const { loginCustomer, verifyOTP, addDetails } = require("../pages/customer/customerLogin")
+const { loginCustomer, verifyOTP, addDetails, resendOTP } = require("../pages/customer/customerLogin")
 
 const customerRouter = express.Router()
 
@@ -37,5 +37,8 @@ customerRouter.post('/verify-otp', verifyOTP)
 
 // add details for new customer
 customerRouter.post('/add-details', addDetails)
+
+// resend otp
+customerRouter.post('/resend-otp', resendOTP)
 
 module.exports = customerRouter
