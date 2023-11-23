@@ -49,6 +49,8 @@ const loginCustomer = async (req, res) => {
             });
             return res.status(201).json({
                 message: `OTP sent Successfully. otp is ${otp}. It will be valid for 5 minutes.`,
+                associatedMerchantID: associatedMerchantID,
+                merchantAssociatedApparelID: merchantAssociatedApparelID
             });
         }
         // Send OTP via Twilio
