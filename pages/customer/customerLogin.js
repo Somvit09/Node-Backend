@@ -147,10 +147,12 @@ const addDetails = async (req, res) => {
     }
     try {
         const { phoneNumber, email, fullName } = req.body
-        await Merchant.findOneAndUpdate(   
-            { merchantID: merchantID },
-            { $push: { merchantAssociatedCustomers: customerID } },
-            { new: true })
+        if (merchantID && associatedApparelID) {
+            await Merchant.findOneAndUpdate(   
+                { merchantID: merchantID },
+                { $push: { merchantAssociatedCustomers: customerID } },
+                { new: true })
+        }
         const customer = await Customer.create({ customerPhoneNumber: phoneNumber, customerEmail: email, customerName: fullName, customerID: customerID })
 
         // Create and sign a JWT token for the newly registered user
