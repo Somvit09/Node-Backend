@@ -1,4 +1,5 @@
 const Customer = require("../../models/customer_model");
+const Merchant = require("../../models/merchant_model");
 const OTP = require("../../models/otpModel");
 const jwt = require("jsonwebtoken");
 require('dotenv').config();
@@ -29,6 +30,8 @@ function generateRandom16DigitNumber() {
 const loginCustomer = async (req, res) => {
     const { phoneNumber } = req.body;
     const otp = generateRandomOTP();
+    const associatedMerchantID = req.query.merchanID
+    const merchantAssociatedApparelID = req.query.apparelID
 
     try {
         // stored the otp to the model
@@ -56,6 +59,9 @@ const loginCustomer = async (req, res) => {
         });
         return res.status(201).json({
             message: `OTP sent Successfully. otp is ${existingOtp.otp}. It will be valid for 5 minutes.`,
+            associatedMerchantID: associatedMerchantID,
+            merchantAssociatedApparelID: merchantAssociatedApparelID
+
         });
 
     } catch (error) {
@@ -132,14 +138,18 @@ const verifyOTP = async (req, res) => {
 const addDetails = async (req, res) => {
     const customerID = generateRandom16DigitNumber()
     const customer = await Customer.findOne({ customerID: customerID })
+    const merchantID = req.query.merchantID
+    const associatedApparelID = req.query.apparelID
     if (customer) {
         customerID = generateRandom16DigitNumber()
     }
     try {
         const { phoneNumber, email, fullName } = req.body
-        await Customer.create({ customerPhoneNumber: phoneNumber, customerEmail: email, customerName: fullName, customerID: customerID })
-
-        const customer = await Customer.findOne({ customerPhoneNumber: phoneNumber })
+        await Merchant.findOneAndUpdate(   
+            { merchantID: merchantID },
+            { $push: { merchantAssociatedCustomers: customerID } },
+            { new: true })
+        const customer = await Customer.create({ customerPhoneNumber: phoneNumber, customerEmail: email, customerName: fullName, customerID: customerID })
 
         // Create and sign a JWT token for the newly registered user
         const token = jwt.sign({ customerId: customer.customerID }, process.env.JWT_SECRET, {
@@ -150,7 +160,8 @@ const addDetails = async (req, res) => {
             message: "Updated new customer, redirecting to virtual tryon.",
             redirectURL: `/uploadphoto`,
             token: token,
-            customer
+            customer: customer,
+            associatedApparelID: associatedApparelID
         })
     } catch (err) {
         res.status(500).json({
