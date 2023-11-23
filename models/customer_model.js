@@ -27,7 +27,8 @@ const customerSchema = new mongoose.Schema({
     customerSizeDetails: sizeDetailSchema,
     customerPhoneNumber: String,
     customerEmail: String,
-    customerAssociatedMerchant: [String]
+    customerAssociatedMerchant: [String],
+    customerVirturalTryRoomImages :[String]
 });
 
 const Customer = mongoose.model("Customer", customerSchema);
