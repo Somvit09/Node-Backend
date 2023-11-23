@@ -2,6 +2,7 @@ require('dotenv').config();
 const jwt = require("jsonwebtoken")
 const express = require("express")
 const { loginCustomer, verifyOTP, addDetails, resendOTP } = require("../pages/customer/customerLogin")
+const {getAllVTRImages,tryVTR} = require('../pages/customer/customer')
 
 const customerRouter = express.Router()
 
@@ -40,5 +41,11 @@ customerRouter.post('/add-details', addDetails)
 
 // resend otp
 customerRouter.post('/resend-otp', resendOTP)
+
+//get image from VTR
+customerRouter.get('/tryOn/:customerID',authenticationToken,tryVTR)
+
+//get all images given by VTR
+customerRouter.get('/images/:customerID',getAllVTRImages)
 
 module.exports = customerRouter
