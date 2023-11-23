@@ -142,8 +142,6 @@ const addDetails = async (req, res) => {
     const customer = await Customer.findOne({ customerID: customerID })
     const merchantID = req.query.merchantID
     const associatedApparelID = req.query.apparelID
-    console.log(merchantID)
-    console.log(associatedApparelID)
     if (customer) {
         customerID = generateRandom16DigitNumber()
     }
