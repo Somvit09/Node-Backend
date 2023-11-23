@@ -142,19 +142,24 @@ const addDetails = async (req, res) => {
     const customer = await Customer.findOne({ customerID: customerID })
     const merchantID = req.query.merchantID
     const associatedApparelID = req.query.apparelID
+    console.log(merchantID)
+    console.log(associatedApparelID)
     if (customer) {
         customerID = generateRandom16DigitNumber()
     }
     try {
         const { phoneNumber, email, fullName } = req.body
-        if (merchantID && associatedApparelID) {
+        const customer = await Customer.create({ customerPhoneNumber: phoneNumber, customerEmail: email, customerName: fullName, customerID: customerID })
+        if (merchantID) {
             await Merchant.findOneAndUpdate(   
                 { merchantID: merchantID },
                 { $push: { merchantAssociatedCustomers: customerID } },
                 { new: true })
+            await Customer.findOneAndUpdate(   
+                { customerID: customerID },
+                { $push: { customerAssociatedMerchant: merchantID } },
+                { new: true })
         }
-        const customer = await Customer.create({ customerPhoneNumber: phoneNumber, customerEmail: email, customerName: fullName, customerID: customerID })
-
         // Create and sign a JWT token for the newly registered user
         const token = jwt.sign({ customerId: customer.customerID }, process.env.JWT_SECRET, {
             expiresIn: "1h", // expires in 1 hour
