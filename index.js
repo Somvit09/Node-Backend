@@ -42,6 +42,7 @@ const Merchant = require('./models/merchant_model')
 const merchantRouter = require('./routes/merchantRoutes')
 const customerRouter = require('./routes/customerRoutes')
 const adminRouter = require('./routes/adminRoutes')
+const tryONRouter = require('./routes/tryOnRouter')
 
 
 // Middlewares
@@ -92,6 +93,8 @@ app.use('/customer', customerRouter)
 // admin routes
 app.use('/admin', adminRouter)
 
+// virtual tryon button
+app.use('/tryon', tryONRouter)
 
 // for uploading a file
 app.post('/upload_image', upload.any('image'), async (req, res) => {
