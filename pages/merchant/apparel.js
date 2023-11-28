@@ -55,28 +55,32 @@ const createApparel = async (req, res) => {
     const merchant = await Merchant.findOne({ merchantID: merchantID })
     try {
         // Check if an apparel item with the same ID already exists
-        const existingApparel = await Apparel.findOne({ aaprelIDBySystem: aaprelIDBySystem, id: apparelID });
-        if (existingApparel) {
+        const existingApparelBySystem = await Apparel.findOne({ aaprelIDBySystem: aaprelIDBySystem });
+        const existingApparelID = await Apparel.findOne({ id: apparelID })
+        if (existingApparelBySystem) {
+            const aaprelIDBySystem = generateRandom16DigitNumber()
+        }
+        if (existingApparelID) {
             return res.status(409).json({
                 message: "Apparel already exists",
-                redirectURL: '/apparels',
-                existingApparel
-            });
+                existingApparelID
+            })
         }
-
+        console.log(existingApparelBySystem)
+        console.log(existingApparelID)
         // Create a new apparel item
         const newApparel = ({
-            apparelName,
-            imageUrl,
-            apparelID,
-            aaprelIDBySystem,
+            apparelName:apparelName,
+            imageUrl: imageUrl,
+            id:apparelID,
+            aaprelIDBySystem:aaprelIDBySystem,
             apparelAssociatedMerchant: merchantID,
-            apparelType,
+            apparelType:apparelType,
             uploadDate: Date.now(),
         });
 
         // Save the new apparel item
-        await Apparel.create(newApparel);
+        const newlyRegisteredApparel = await Apparel.create(newApparel);
 
         // save the new apparel to the merchant
         if (!merchant.merchantAssociatedApparels.includes(apparelID)) {
@@ -87,7 +91,7 @@ const createApparel = async (req, res) => {
 
         return res.status(201).json({
             message: `Apparel with id ${apparelID} added.`,
-            apparel: await Apparel.findOne({ id: apparelID })
+            apparel: newlyRegisteredApparel
         });
     } catch (err) {
         return res.status(500).json({
@@ -238,7 +242,7 @@ const uploadCSV = async (req, res) => {
                     apparelAssociatedMerchant: req.user.merchantID
                 })
 
-                if(existedSystemId){
+                if (existedSystemId) {
                     id = generateRandom16DigitNumber()
                 }
 
