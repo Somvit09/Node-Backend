@@ -3,6 +3,7 @@ const jwt = require("jsonwebtoken")
 const express = require("express")
 const { loginCustomer, verifyOTP, addDetails, resendOTP } = require("../pages/customer/customerLogin")
 const {getAllVTRImages,tryVTR} = require('../pages/customer/customer')
+const multer = require("multer")
 
 const customerRouter = express.Router()
 
@@ -30,6 +31,34 @@ customerRouter.post('/protected_route', authenticationToken, (req, res) => {
     res.status(200).json({message: customerID})
 })
 
+// storage middleware for uploading images
+const storage = multer.diskStorage({
+    destination:'./public/upload',
+    filename: (req, file, cb) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
+        cb(null, uniqueSuffix + '-' + file.originalname)
+    },
+})
+
+// creating a multer instance with the specified storage
+const upload = multer({
+    storage: storage,
+    fileFilter:(req, file, cb)=>{
+        if(
+            file.mimetype == 'image/jpeg' ||
+            file.mimetype == 'image/jpg' ||
+            file.mimetype == 'image/png' 
+        ){
+            cb(null, true)
+        }
+        else{
+            cb(null, false);
+            cb(new Error('Only jpeg,  jpg , and png Image allowed'))
+        }
+    }
+})
+
+
 // login customer
 customerRouter.post('/login', loginCustomer)
 
@@ -43,7 +72,7 @@ customerRouter.post('/add-details', addDetails)
 customerRouter.post('/resend-otp', resendOTP)
 
 //get image from VTR
-customerRouter.get('/tryOn/:customerID',authenticationToken,tryVTR)
+customerRouter.post('/tryOn/:customerID',authenticationToken,upload.single('file'),tryVTR)
 
 //get all images given by VTR
 customerRouter.get('/images/:customerID',getAllVTRImages)
