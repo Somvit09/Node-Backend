@@ -5,6 +5,7 @@ const cors = require('cors'); //Cross-Origin Resource Sharing (CORS) middleware
 const multer = require('multer'); // middleware for handling file uploads
 const jwt = require("jsonwebtoken")
 const fs = require('fs')
+const path = require("path")
 
 const app = express();
 
@@ -85,7 +86,7 @@ try {
 
     db.once('open', () => {
         console.log('Connected to MongoDB');
-        db.useDb(database)
+        // db.useDb(database)
         // Perform additional actions when the MongoDB connection is successful
     });
 } catch (error) {

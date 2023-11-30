@@ -72,9 +72,9 @@ customerRouter.post('/add-details', addDetails)
 customerRouter.post('/resend-otp', resendOTP)
 
 //get image from VTR
-customerRouter.post('/tryOn/:customerID',authenticationToken,upload.single('file'),tryVTR)
+customerRouter.post('/tryOn',authenticationToken,upload.single('file'),tryVTR)
 
 //get all images given by VTR
-customerRouter.get('/images/:customerID',getAllVTRImages)
+customerRouter.get('/VTRimages',authenticationToken,getAllVTRImages)
 
 module.exports = customerRouter

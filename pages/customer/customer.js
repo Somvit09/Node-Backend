@@ -5,7 +5,8 @@ const Customer = require("../../models/customer_model")
 
 const tryVTR = async(req,res)=>{
     try{
-        const customerID  = req.user
+        const customerID  = req.user.customerId
+        
         //update customer
         const customer = await Customer.findOne({customerID:customerID})
         const imgsUrls = customer.customerVirturalTryRoomImages
@@ -29,11 +30,13 @@ const tryVTR = async(req,res)=>{
 
 const getAllVTRImages = async(req,res)=>{
     try{
-        const customer =await Customer.findOne({customerID:req.user})
+        const id = req.user.customerId
+        const customer =await Customer.findOne({customerID:id})
         const images = customer.customerVirturalTryRoomImages
+        console.log(images);
         res.status(200).json({
             customerVTEimages : images,
-            message : `fetched all the Virtual Try Room Images for customer with ID ${customerID}`,
+            message : `fetched all the Virtual Try Room Images for customer with ID ${id}`,
             success : true
         })
     }catch(err){
