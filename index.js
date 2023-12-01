@@ -1,5 +1,6 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const Customer = require('./models/customer_model')
 const fastcsv = require("fast-csv")
 const cors = require('cors'); //Cross-Origin Resource Sharing (CORS) middleware
 const multer = require('multer'); // middleware for handling file uploads
@@ -156,9 +157,28 @@ const checkAndUpdateMerchantStatus = async () => {
     }
 };
 
+
+// check if any images in virtual tryon section is 6 days past image or not
+const removeOldImages = async () => {
+    const sixDaysAgo = new Date()
+    sixDaysAgo.setDate(sixDaysAgo.getDate() - 6)
+
+    try {
+        const result = await Customer.updateMany({
+            'customerVirtualTryRoomImages.createdAt': { $lt: sixDaysAgo } },
+            { $pull: { customerVirtualTryRoomImages: { createdAt: { $lt: sixDaysAgo } } } }
+        )
+        console.log(`${result.nModified} images removed.`)
+    } catch(err) {
+        console.error(err.message)
+    }
+}
+
+
+
 // Set up a scheduler to run the checkAndUpdateMerchantStatus function every 24 hours
 setInterval(checkAndUpdateMerchantStatus, 24 * 60 * 60 * 1000); // Run every 24 hours
-
+setInterval(removeOldImages, 12 * 60 * 60 * 1000); // Run every 12 hours
 
 
 app.listen(port, () => {

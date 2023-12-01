@@ -36,15 +36,12 @@ function authenticationToken(req, res, next) {
 
 // storage middleware for uploading images
 const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, 'uploads/')
-    },
+    destination: './public/csv',
     filename: (req, file, cb) => {
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
         cb(null, uniqueSuffix + '-' + file.originalname)
     },
 })
-
 // creating a multer instance with the specified storage
 const upload = multer({
     storage: storage

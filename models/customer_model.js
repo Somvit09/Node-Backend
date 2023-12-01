@@ -34,7 +34,7 @@ const customerSchema = new mongoose.Schema({
     customerPhoneNumber: String,
     customerEmail: String,
     customerAssociatedMerchant: [String],
-    customerVirturalTryRoomImages :[imageSchema]
+    customerVirtualTryRoomImages :[imageSchema]
 });
 
 const Customer = mongoose.model("Customer", customerSchema);

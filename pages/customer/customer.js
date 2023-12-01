@@ -9,12 +9,12 @@ const tryVTR = async(req,res)=>{
         
         //update customer
         const customer = await Customer.findOne({customerID:customerID})
-        const imgsUrls = customer.customerVirturalTryRoomImages
+        const imgsUrls = customer.customerVirtualTryRoomImages
         imgsUrls.push({
-            imgUrl : "/upload/"+req.file.filename
+            imgUrl : "/public/upload/"+req.file.filename
         })
         const updateCustomer = await Customer.findOneAndUpdate({customerID:customerID},{
-            customerVirturalTryRoomImages : imgsUrls
+            customerVirtualTryRoomImages : imgsUrls
         })
         res.status(200).json({
             message :`image have been saved successfully.`,
@@ -32,7 +32,7 @@ const getAllVTRImages = async(req,res)=>{
     try{
         const id = req.user.customerId
         const customer =await Customer.findOne({customerID:id})
-        const images = customer.customerVirturalTryRoomImages
+        const images = customer.customerVirtualTryRoomImages
         console.log(images);
         res.status(200).json({
             customerVTEimages : images,
