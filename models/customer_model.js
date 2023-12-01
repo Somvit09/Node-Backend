@@ -16,6 +16,12 @@ const sizeDetailSchema = new mongoose.Schema({
     // Add more size details as needed
 });
 
+const imageSchema = new mongoose.Schema({
+    imgUrl : {type: String , required:true},
+    createdAt: { type: Date, default: Date.now },
+})
+
+
 const customerSchema = new mongoose.Schema({
     customerID: {
         type: String,
@@ -28,7 +34,7 @@ const customerSchema = new mongoose.Schema({
     customerPhoneNumber: String,
     customerEmail: String,
     customerAssociatedMerchant: [String],
-    customerVirturalTryRoomImages :[String]
+    customerVirturalTryRoomImages :[imageSchema]
 });
 
 const Customer = mongoose.model("Customer", customerSchema);
