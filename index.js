@@ -25,15 +25,15 @@ const storage = multer.diskStorage({
 // creating a multer instance with the specified storage
 const upload = multer({
     storage: storage,
-    fileFilter:(req, file, cb)=>{
-        if(
+    fileFilter: (req, file, cb) => {
+        if (
             file.mimetype == 'image/jpeg' ||
             file.mimetype == 'image/jpg' ||
-            file.mimetype == 'image/png' 
-        ){
+            file.mimetype == 'image/png'
+        ) {
             cb(null, true)
         }
-        else{
+        else {
             cb(null, false);
             cb(new Error('Only jpeg,  jpg , and png Image allowed'))
         }
@@ -159,19 +159,56 @@ const checkAndUpdateMerchantStatus = async () => {
 
 
 // check if any images in virtual tryon section is 6 days past image or not
-const removeOldImages = async () => {
+const removeOldImagesFromDB = async () => {
     const sixDaysAgo = new Date()
-    sixDaysAgo.setDate(sixDaysAgo.getDate() - 6)
+    sixDaysAgo.setDate(sixDaysAgo.getDate() - 6) // 6 for 6 days older images to be deleted
 
     try {
         const result = await Customer.updateMany({
-            'customerVirtualTryRoomImages.createdAt': { $lt: sixDaysAgo } },
+            'customerVirtualTryRoomImages.createdAt': { $lt: sixDaysAgo }
+        },
             { $pull: { customerVirtualTryRoomImages: { createdAt: { $lt: sixDaysAgo } } } }
         )
         console.log(`${result.nModified} images removed.`)
-    } catch(err) {
+    } catch (err) {
         console.error(err.message)
     }
+}
+
+
+const deleteImageFiles = async () => {
+    try {
+        const sixDaysAgo = new Date()
+        sixDaysAgo.setDate(sixDaysAgo.getDate() - 6) // 6 for 6 days older images to be deleted
+        const customers = await Customer.find({
+            'customerVirtualTryRoomImages.createdAt': { $lt: sixDaysAgo }
+        })
+
+        await Promise.all(customers.map(async (customer) => {
+            await Promise.all(customer.customerVirtualTryRoomImages.map(async (image) => {
+                const imagePath = path.join(__dirname, image.imgUrl)
+                const doesFileExist = await fs.promises.access(imagePath)
+                    .then(() => true)
+                    .catch(() => false);
+
+                if (doesFileExist) {
+                    await fs.promises.unlink(imagePath);
+                    console.log(`File ${imagePath} deleted successfully.`);
+                } else {
+                    console.log(`File ${imagePath} does not exist.`);
+                }
+
+            }));
+        }));
+    } catch (err) {
+        console.error(`Error deleting image files: ${err.message}`)
+    }
+}
+
+
+const removeOldImages = async () => {
+    await deleteImageFiles()
+    await removeOldImagesFromDB()
 }
 
 
@@ -179,7 +216,6 @@ const removeOldImages = async () => {
 // Set up a scheduler to run the checkAndUpdateMerchantStatus function every 24 hours
 setInterval(checkAndUpdateMerchantStatus, 24 * 60 * 60 * 1000); // Run every 24 hours
 setInterval(removeOldImages, 12 * 60 * 60 * 1000); // Run every 12 hours
-
 
 app.listen(port, () => {
     console.log(`Server is running on the port ${port}`);
