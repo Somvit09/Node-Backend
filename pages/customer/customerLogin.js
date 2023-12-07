@@ -165,7 +165,7 @@ const addDetails = async (req, res) => {
         return res.status(201).json({
             success: true,
             message: "Updated new customer, redirecting to virtual tryon.",
-            redirectURL: `/multipage`,
+            redirectURL: `/uploadphoto`,
             token: token,
             customer: customer,
             associatedApparelID: associatedApparelID
