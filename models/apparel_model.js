@@ -12,6 +12,11 @@ const apparalSchema = new mongoose.Schema({
     },
     apparelName: String,
     apparelType: String,
+    apparelTryOnStatus: {
+        type: String,
+        enum: ['active', 'inactive'],
+        default: 'inactive'
+    },
     imageUrl: String, // uploading images and store the path
     uploadDate: {
         type: Date,

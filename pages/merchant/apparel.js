@@ -177,7 +177,7 @@ const getAllApparelsForASpecificMerchant = async (req, res) => {
         })
     }
     try {
-        const apparels = await Apparel.find({ apparelAssociatedMerchant: merchant.merchantID })
+        const apparels = await Apparel.find({ apparelAssociatedMerchant: merchant.merchantID }).sort({ uploadDate: -1 })
         if (!apparels || apparels.length === 0) {
             return res.status(404).json({
                 apparels,
