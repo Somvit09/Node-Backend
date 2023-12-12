@@ -190,7 +190,11 @@ const getAllApparelsForASpecificMerchant = async (req, res) => {
         })
     }
     try {
-        const apparels = await Apparel.find({ apparelAssociatedMerchant: merchant.merchantID }).sort({ uploadDate: -1 })
+        const apparels_ = await Apparel.find({ apparelAssociatedMerchant: merchant.merchantID }).sort({ uploadDate: -1 })
+        const apparels = apparels_.map(apparel => ({
+            ...apparel._doc,
+            uploadDate: apparel.uploadDate.toLocaleDateString()
+        }))
         if (!apparels || apparels.length === 0) {
             return res.status(404).json({
                 apparels,
