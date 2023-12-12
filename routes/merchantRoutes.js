@@ -7,7 +7,7 @@ const { merchantLogin } = require('../pages/merchant/merchantLogin')
 const { registerMerchant } = require('../pages/merchant/merchantRegister')
 const { forgotPassword, verifyPasswordResetOTP, resendOTP } = require('../pages/merchant/forgotPassword')
 const { 
-    getASingleApparel, getAllApparels, createApparel, updateApparel, deleteApparel, getAllApparelsForASpecificMerchant, uploadCSV
+    getASingleApparel, getAllApparels, createApparel, updateApparel, deleteApparel, getAllApparelsForASpecificMerchant, uploadCSV, searchApparelsFromSearchButton
 } = require('.././pages/merchant/apparel')
 const {
     getAllCustomers, getAllCustomersForASpecificMerchant, customerUploadCSV
@@ -99,6 +99,9 @@ merchantRouter.get('/all-customers', authenticationToken, getAllCustomersForASpe
 
 // get all customers
 merchantRouter.get('/customers', getAllCustomers)
+
+// search queries
+merchantRouter.get('/search', authenticationToken, searchApparelsFromSearchButton)
 
 // upload a csv file
 merchantRouter.post('/upload-csv', upload.single('csvFile'), authenticationToken, uploadCSV)

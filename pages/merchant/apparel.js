@@ -298,9 +298,54 @@ const uploadCSV = async (req, res) => {
 }
 
 
+const searchApparelsFromSearchButton = async (req, res) => {
+    const merchant = await Merchant.findOne({merchantID: req.user.merchantID})
+    if (!merchant){
+        return res.status(404).json({
+            message: "Merchant not found."
+        })
+    }
+    try {
+        const { keyword } = req.query
+        const searchQuery = {
+            apparelAssociatedMerchant: merchant.merchantID,
+            $or: [
+                { id: { $regex: keyword.toString(), $options: 'i' } }, // Case-insensitive search for apparel ID
+                { apparelName: { $regex: keyword.toString(), $options: 'i' } }, // Case-insensitive search for apparel name
+                { apparelType: { $regex: keyword.toString(), $options: 'i' } }, // Case-insensitive search for apparel type
+                { status: { $regex: keyword.toString(), $options: 'i' } } // Case-insensitive search for status
+            ]
+        }
+        const apparels = await Apparel.find(searchQuery).sort({ uploadDate: -1 })
+        if (!apparels || apparels.length === 0) {
+            return res.status(404).json({
+                apparels,
+                success: false,
+                message: "No apparels found."
+            })
+        }
+        // Format the uploadDate before sending it in the response
+        const formattedApparels = apparels.map(apparel => ({
+            ...apparel._doc,
+            uploadDate: apparel.uploadDate.toLocaleDateString() 
+        }));
+
+        return res.status(200).json({
+            apparels: formattedApparels,
+            success: true
+        })
+    } catch (err) {
+        return res.status(500).json({
+            success: false,
+            error: err.message
+        })
+    }
+}
+
+
 
 
 
 module.exports = {
-    getAllApparels, getASingleApparel, createApparel, updateApparel, deleteApparel, getAllApparelsForASpecificMerchant, uploadCSV
+    getAllApparels, getASingleApparel, createApparel, updateApparel, deleteApparel, getAllApparelsForASpecificMerchant, uploadCSV, searchApparelsFromSearchButton
 }
