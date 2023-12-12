@@ -1,7 +1,17 @@
 const Apparel = require("../../models/apparel_model");
 const Merchant = require("../../models/merchant_model");
 const fs = require('fs')
-const fastcsv = require("fast-csv")
+const fastcsv = require("fast-csv");
+const { type } = require("os");
+const apparelTypesValidForTryOnStatus = [
+    'Outerwear',
+    'Dresses',
+    'Sportswear and separates',
+    'Brides and bridesmaid attire',
+    'Blouses',
+    'Uniforms and aprons',
+    'Maternity'
+]
 
 // get 16 digit random number
 function generateRandom16DigitNumber() {
@@ -66,8 +76,10 @@ const createApparel = async (req, res) => {
                 existingApparelID
             })
         }
-        console.log(existingApparelBySystem)
-        console.log(existingApparelID)
+        const tryOnStatus = apparelTypesValidForTryOnStatus.some(
+            type => type.toLowerCase() === apparelType.toLowerCase()
+            ) ? 'active' : 'inactive'
+        console.log(tryOnStatus)
         // Create a new apparel item
         const newApparel = ({
             apparelName:apparelName,
@@ -76,6 +88,7 @@ const createApparel = async (req, res) => {
             aaprelIDBySystem:aaprelIDBySystem,
             apparelAssociatedMerchant: merchantID,
             apparelType:apparelType,
+            apparelTryOnStatus: tryOnStatus,
             uploadDate: Date.now(),
         });
 
