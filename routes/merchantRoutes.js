@@ -13,6 +13,7 @@ const {
     getAllCustomers, getAllCustomersForASpecificMerchant, customerUploadCSV
 } = require('.././pages/merchant/customer')
 const getAMerchantBySpecificID = require('../pages/merchant/merchantInfo')
+const creteMerchantTheme = require('../pages/merchant/colortheme')
 
 
 // for protected  or authenticated routes
@@ -99,6 +100,9 @@ merchantRouter.get('/all-customers', authenticationToken, getAllCustomersForASpe
 
 // get all customers
 merchantRouter.get('/customers', getAllCustomers)
+
+// color code save
+merchantRouter.post('/colorcode', authenticationToken, creteMerchantTheme)
 
 // search queries
 merchantRouter.get('/search', authenticationToken, searchApparelsFromSearchButton)

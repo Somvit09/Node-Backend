@@ -27,8 +27,15 @@ const merchantSchema = new mongoose.Schema({
     merchantPricingEnded: String,
     merchantColourTheme: {
         type: String,
+        required: true,
+    },
+    merchantSecondaryColor: {
+        type: String,
         required: false,
-        enum: ['Red', 'Green', 'Blue'] // these are the plans and can changed as per required
+    },
+    merchantTextColor: {
+        type: String,
+        required: false
     },
     merchantLogo: String, // containing the url path of the logo
     merchantAssociatedApparels: [String],
