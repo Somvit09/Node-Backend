@@ -80,7 +80,6 @@ const merchantCreation = async (req, res) => {
             merchantLogo: imagePath,
             merchantDesignation: designation
         });
-        console.log(newMerchant)
         return res.status(201).json({
             success: true,
             message: `Merchant created id: ${newMerchant.merchantID}`,
@@ -124,9 +123,9 @@ const merchantEdit = async (req, res) => {
 }
 
 const planCreation = async (req, res) => {
-    const { plan, date } = req.body
+    const { plan, date, email } = req.body
     // assuming the date in the format 'dd.mm.yyyy' like '12.05.2023'
-    const dateParts = date.split('.')
+    const dateParts = date.split('/')
     const planStarts = new Date()
 
     planStarts.setFullYear(dateParts[2])
@@ -152,7 +151,7 @@ const planCreation = async (req, res) => {
         const planStartsDateOnly = planStarts.toISOString().split('T')[0];
         const planEndsDateOnly = planEnds.toISOString().split('T')[0];
 
-        const updatedMerchant = await Merchant.findOneAndUpdate({merchantID: req.params.id}, {
+        const updatedMerchant = await Merchant.findOneAndUpdate({merchantEmail: email}, {
             merchantPricingPlan: plan,
             merchantPricingStarted: planStartsDateOnly,
             merchantPricingEnded: planEndsDateOnly,

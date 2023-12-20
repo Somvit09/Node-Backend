@@ -79,7 +79,7 @@ adminRouter.post('/merchant/create', authenticationToken, merchantCreation)
 adminRouter.post('/merchant/edit/:id', authenticationToken, upload.single('file'), merchantEdit)
 
 // plan creation
-adminRouter.post('/merchant/plan-create/:id', authenticationToken, planCreation)
+adminRouter.post('/merchant/plan-create', authenticationToken, planCreation)
 
 
 
