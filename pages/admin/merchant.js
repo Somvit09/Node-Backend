@@ -95,16 +95,17 @@ const merchantCreation = async (req, res) => {
 }
 
 const merchantEdit = async (req, res) => {
-    const { name, type, email, location, designation, status, theme, imagePath } = req.body
+    const { name, type, email, location, designation, status, theme } = req.body
     const id = req.params.id
     try {
-
+        //const merchant = await Merchant.findOne({merchantID:id})
+        const logo = "/public/logos/" + req.file.filename
         await Merchant.findOneAndUpdate({ merchantID: id }, {
             merchantName: name,
             merchantType: type,
             merchantEmail: email,
             merchantColourTheme: theme,
-            merchantLogo: imagePath,
+            merchantLogo: logo,
             merchantLocation: location,
             merchantDesignation:  designation,
             merchantActive: status

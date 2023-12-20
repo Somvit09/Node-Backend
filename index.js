@@ -64,6 +64,7 @@ const corsOptions = {
     origin: '*', // Update with your frontend's URL
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true, // Enable CORS credentials (cookies, authorization headers, etc.)
+    allowedHeaders: 'Content-Type,Authorization',
 };
 
 app.use(cors(corsOptions));
