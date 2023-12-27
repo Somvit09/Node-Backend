@@ -1,6 +1,7 @@
 const Merchant = require("../../models/merchant_model")
 const bcrypt = require("bcrypt")
 
+
 // get 16 digit random number
 function generateRandom16DigitNumber() {
     return Math.floor(1000000000000000 + Math.random() * 9000000000000000).toString();
@@ -44,7 +45,11 @@ const getAMerchantBySpecificID = async (req, res) => {
 }
 
 const merchantCreation = async (req, res) => {
-    const { name, type, email, password, location, theme, imagePath, designation } = req.body;
+    const { name, type, email, password, location, theme,designation } = req.body;
+    // for the image url
+    const url = req.protocol+"://"+req.get('host')
+    const imagePath = url+"/public/logos/"+req.file.filename
+    
     const merchantId = generateRandom16DigitNumber()
     const existingMerchantId = Merchant.findOne({ merchantID: merchantId })
     try {
