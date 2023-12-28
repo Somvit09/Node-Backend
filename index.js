@@ -96,6 +96,8 @@ try {
 }
 
 
+
+
 // merchant routes
 app.use('/merchant', merchantRouter)
 

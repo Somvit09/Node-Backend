@@ -44,6 +44,7 @@ const adminRouter = express.Router()
 // for protected  or authenticated routes
 function authenticationToken(req, res, next) {
     const token = req.header("Authorization")
+    
     if (!token) {
         return res.status(400).json({
             error: "Unauthorized"
@@ -73,7 +74,7 @@ adminRouter.get('/merchants', authenticationToken, getAllMerchants)
 adminRouter.get('/merchant/:id', authenticationToken, getAMerchantBySpecificID)
 
 // create a merchant
-adminRouter.post('/merchant/create', authenticationToken, merchantCreation)
+adminRouter.post('/merchant/create', authenticationToken,upload.single('merchantLogo'), merchantCreation)
 
 // merchant profile update
 adminRouter.post('/merchant/edit/:id', authenticationToken, upload.single('file'), merchantEdit)

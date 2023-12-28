@@ -16,7 +16,6 @@ const adminRegister = async (req, res) => {
         // Hash the password
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
-
         const newAdmin = await Admin.create({
             emailId: email,
             password: hashedPassword
