@@ -45,18 +45,18 @@ const getAMerchantBySpecificID = async (req, res) => {
 }
 
 const merchantCreation = async (req, res) => {
-    const { name, type, email, password, location, theme,designation } = req.body;
+    const { name, type, email, password, location, theme, designation } = req.body;
     // for the image url
     const url = req.protocol+"://"+req.get('host')
     const imagePath = url+"/public/logos/"+req.file.filename
     
     const merchantId = generateRandom16DigitNumber()
-    const existingMerchantId = Merchant.findOne({ merchantID: merchantId })
+    const existingMerchantId = await Merchant.findOne({ merchantID: merchantId })
     try {
         // Check if the user already exists
         const existingMerchant = await Merchant.findOne({
             merchantEmail: email,
-            merchantName: name,
+            merchantName: name
         });
         if (existingMerchantId) {
             const merchantId = generateRandom16DigitNumber()
@@ -72,7 +72,6 @@ const merchantCreation = async (req, res) => {
         // Hash the password
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
-
         // Create a new user with hashed password
         const newMerchant = await Merchant.create({
             merchantEmail: email,
@@ -103,7 +102,8 @@ const merchantEdit = async (req, res) => {
     const id = req.params.id
     try {
         //const merchant = await Merchant.findOne({merchantID:id})
-        const logo = "/public/logos/" + req.file.filename
+        const url = req.protocol+"://"+req.get('host')
+        const logo = url + "/public/logos/" + req.file.filename
         await Merchant.findOneAndUpdate({ merchantID: id }, {
             merchantName: name,
             merchantType: type,

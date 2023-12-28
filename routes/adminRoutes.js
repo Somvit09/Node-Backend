@@ -74,7 +74,7 @@ adminRouter.get('/merchants', authenticationToken, getAllMerchants)
 adminRouter.get('/merchant/:id', authenticationToken, getAMerchantBySpecificID)
 
 // create a merchant
-adminRouter.post('/merchant/create', authenticationToken,upload.single('merchantLogo'), merchantCreation)
+adminRouter.post('/merchant/create', authenticationToken, upload.single('file'), merchantCreation)
 
 // merchant profile update
 adminRouter.post('/merchant/edit/:id', authenticationToken, upload.single('file'), merchantEdit)
