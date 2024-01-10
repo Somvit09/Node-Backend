@@ -9,11 +9,12 @@ const tryVTR = async(req,res)=>{
         
         //update customer
         const customer = await Customer.findOne({customerID:customerID})
+        const url = req.protocol+"://"+req.get('host')
         const imgsUrls = customer.customerVirtualTryRoomImages
         imgsUrls.push({
-            imgUrl : "/public/upload/"+req.file.filename
+            imgUrl : url+"/public/upload/"+req.file.filename
         })
-        const updateCustomer = await Customer.findOneAndUpdate({customerID:customerID},{
+        await Customer.findOneAndUpdate({customerID:customerID},{
             customerVirtualTryRoomImages : imgsUrls
         })
         res.status(200).json({
